@@ -1,13 +1,12 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import datetime
 
 # Configuración de página
 st.set_page_config(page_title="Dashboard Maracay Run 2026", page_icon="🏅", layout="wide")
 
 st.title("🏅 Análisis de Resultados: Maracay Run 2026 (10K)")
-st.markdown("Visualización y estadísticas basadas **exclusivamente en el Tiempo Chip**.")
+st.markdown("Estadísticas y tabla de clasificación basadas **exclusivamente en el Tiempo Chip**.")
 
 # 1. Función para cargar y limpiar los datos directamente desde el repositorio
 @st.cache_data
@@ -92,40 +91,9 @@ if df_original is not None:
 
         st.divider()
 
-        # 5. Visualizaciones
-        col_graf1, col_graf2 = st.columns(2)
-        
-        with col_graf1:
-            df_filtrado['Minutos_Chip'] = df_filtrado['Segundos_Chip'] / 60
-            fig_hist = px.histogram(
-                df_filtrado, 
-                x="Minutos_Chip", 
-                nbins=20, 
-                title="Distribución de Tiempos (Minutos)",
-                labels={"Minutos_Chip": "Tiempo en Minutos"},
-                color_discrete_sequence=['#00CC96']
-            )
-            fig_hist.update_layout(yaxis_title="Cantidad de Corredores")
-            st.plotly_chart(fig_hist, use_container_width=True)
-
-        with col_graf2:
-            participacion = df_filtrado['CAT.'].value_counts().reset_index()
-            participacion.columns = ['Categoría', 'Participantes']
-            fig_bar = px.bar(
-                participacion, 
-                x='Participantes', 
-                y='Categoría', 
-                orientation='h', 
-                title="Participación por Categoría",
-                color='Participantes',
-                color_continuous_scale='Blues'
-            )
-            fig_bar.update_layout(yaxis={'categoryorder':'total ascending'})
-            st.plotly_chart(fig_bar, use_container_width=True)
-
-        # 6. Tabla Final Reordenada
+        # 5. Tabla Final Reordenada
         st.markdown("### 📋 Clasificación Oficial (Por T. Chip)")
-        columnas_mostrar = [col for col in df_filtrado.columns if col not in ['Segundos_Chip', 'Minutos_Chip']]
+        columnas_mostrar = [col for col in df_filtrado.columns if col != 'Segundos_Chip']
         st.dataframe(df_filtrado[columnas_mostrar], use_container_width=True, hide_index=True)
 
     else:
