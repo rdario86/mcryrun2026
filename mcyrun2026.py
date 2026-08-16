@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import unicodedata
 
 # Configuración de página
 st.set_page_config(page_title="Dashboard Maracay Run 2026", page_icon="🏅", layout="wide")
@@ -22,6 +23,10 @@ def cargar_datos():
     # Descartar la columna T. PISTOLA si existe
     if 'T. PISTOLA' in df.columns:
         df = df.drop(columns=['T. PISTOLA'])
+        
+    # --- NUEVO: Eliminar acentos de la columna de nombres ---
+    if 'APELLIDO & NOMBRE' in df.columns:
+        df['APELLIDO & NOMBRE'] = df['APELLIDO & NOMBRE'].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
         
     # Convertir T. CHIP a formato de tiempo timedelta
     df['Segundos_Chip'] = pd.to_timedelta(df['T. CHIP']).dt.total_seconds()
@@ -49,6 +54,11 @@ if df_original is not None:
     # 2. Panel de Filtros y Búsqueda (Sidebar)
     st.sidebar.header("Filtros y Búsqueda")
     termino_busqueda = st.sidebar.text_input("🔍 Buscar (C.I., N# o Nombre):", "")
+    
+    # Eliminamos acentos también del término de búsqueda para que la coincidencia sea exacta
+    if termino_busqueda:
+        termino_busqueda = unicodedata.normalize('NFKD', termino_busqueda).encode('ascii', 'ignore').decode('utf-8')
+
     generos = st.sidebar.multiselect("Filtrar por Género:", options=df_original['GENERO'].dropna().unique())
     categorias = st.sidebar.multiselect("Filtrar por Categoría:", options=df_original['CAT.'].dropna().unique())
 
